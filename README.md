@@ -3,9 +3,9 @@
 Live: https://city-pulse12.netlify.app
 
 ## Team - LPU
-- Ritik Kumar Parida (Team Lead) - ritik16007
-- Kashinath AR
-- Arshdeep Singh
+- Kashinath AR- (Team Lead)
+- Ritik Kumar Parida  - ritik16007
+- Arshdeep Singh - 
 - Bhagyanath CB
 - Samleen Kaur
 
