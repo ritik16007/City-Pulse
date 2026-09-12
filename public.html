@@ -1,0 +1,64 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>City Pulse - Public Dashboard</title><link rel="stylesheet" href="style.css">
+<style>
+body{background:#070a12;margin:0;font-family:Inter,sans-serif}
+.navbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:#0e1320;border-bottom:1px solid #1e2a44}
+.logo{display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:1px;font-size:13px;color:#fff}
+.logo-icon{width:28px;height:28px;background:#5a86ff;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff}
+.admin-btn{background:#1e2a44;color:#fff;border:1px solid #2a3a5a;padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer}
+.wrap{padding:16px;max-width:1300px;margin:auto}
+.top{background:#111625;border:1px solid #1e2a44;padding:14px;border-radius:12px;margin:12px 0}
+.search{width:100%;padding:12px;border-radius:10px;background:#0d1220;border:1px solid #1e2a44;color:#fff;outline:none;box-sizing:border-box;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.card{background:#111625;border:1px solid #1e2a44;border-radius:16px;padding:16px;border-left:4px solid var(--c);transition:0.2s}
+.count{font-size:36px;font-weight:900;color:#fff;margin:8px 0}
+.chip{padding:6px 12px;border-radius:20px;font-size:11px;background:#0d1220;border:1px solid #1e2a44;color:#8aa0c8;cursor:pointer;margin-right:6px;margin-top:6px;display:inline-block}
+.chip.active{background:#5a86ff;color:#fff;border-color:#5a86ff}
+</style>
+</head><body>
+<script>if(localStorage.getItem('isLoggedIn')!=='true'){location.href='login.html';}</script>
+<header class="navbar"><div class="logo"><div class="logo-icon">◉</div><span>CITY PULSE • PUBLIC DASHBOARD</span></div><button class="admin-btn" onclick="localStorage.clear();location.href='login.html'">Logout</button></header>
+<div class="wrap">
+<h2 style="color:#fff;margin:8px 0;">Live Crowd Monitoring</h2>
+<p style="color:#8aa0c8;font-size:13px;margin:0 0 12px 0;">Real-time crowd estimation for public places</p>
+<div class="top">
+<input type="text" id="searchInput" class="search" placeholder="Search location... e.g. Market, Station, Haveli">
+<div id="chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;"></div>
+<div style="margin-top:12px;font-size:11px;color:#8aa0c8;">System Status: <span id="status">Checking feed...</span> • Last Updated: <span id="last">--:--</span></div>
+</div>
+<div id="grid" class="grid"></div>
+</div>
+<script>
+const ALL=[
+{id:'phagwara-main-market', name:'Phagwara Main Market'},
+{id:'jalandhar-main-market', name:'Jalandhar Main Market'},
+{id:'dmart-phagwara', name:'D-mart Phagwara'},
+{id:'eastwood-village', name:'Eastwood Village'},
+{id:'haveli', name:'Haveli'},
+{id:'jalandhar-cant-railway-station', name:'Jalandhar Cant Railway Station'},
+{id:'jalandhar-pvr', name:'Jalandhar PVR'}
+];
+let search='';
+let liveData=JSON.parse(localStorage.getItem('cityPulseData')||'{}');
+document.getElementById('searchInput').addEventListener('input', e=>{search=e.target.value.toLowerCase(); render();});
+let chipDiv=document.getElementById('chips');
+ALL.forEach(p=>{let b=document.createElement('button');b.className='chip';b.textContent=p.name;b.onclick=()=>{search=p.name.toLowerCase();document.getElementById('searchInput').value=p.name;render();}; chipDiv.appendChild(b);});
+function getLiveData(){try{return JSON.parse(localStorage.getItem('cityPulseData')||'{}')}catch{return{}}}
+try{const bc=new BroadcastChannel('citypulse_channel'); bc.onmessage=e=>{if(e.data.type==='crowd_update'){liveData=e.data.data; render();}}}catch{}
+window.addEventListener('storage', e=>{if(e.key==='cityPulseData'){liveData=JSON.parse(e.newValue||'{}'); render();}});
+setInterval(()=>{let nd=getLiveData(); if(JSON.stringify(nd)!=JSON.stringify(liveData)){liveData=nd; render();}},500);
+function colorFor(l){return l==='CRITICAL'?'#ff4d4d':l==='HIGH'?'#ffaa00':l==='MODERATE'?'#5a86ff':'#2ee66c';}
+function render(){
+ let filtered=ALL.filter(p=>p.name.toLowerCase().includes(search) || p.id.includes(search));
+ let h='';
+ filtered.forEach(p=>{
+  let d=liveData[p.id]||{count:0,detected:0,level:'LOW',time:'No data',updated:null};
+  let c=colorFor(d.level); let isLive=d.updated&&(Date.now()-d.updated<6000);
+  h+=`<div class="card" style="--c:${c};"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#fff;font-size:14px;">${d.placeName||p.name}</b><span style="font-size:9px;padding:4px 10px;border-radius:12px;background:${c}18;color:${c};border:1px solid ${c}30;font-weight:700;">${d.level}</span></div><div class="count">${d.count}</div><div style="font-size:11px;color:#6b7fa3;">Estimated Crowd: ${d.count} • Detected in Camera: ${d.detected||0}</div><div style="font-size:11px;color:#8aa0c8;margin-top:6px;">Estimated Waiting: ${d.time}</div><div style="font-size:10px;color:${isLive?'#2ee66c':'#5a6f95'};margin-top:8px;font-weight:700;">${isLive?'● LIVE FEED ACTIVE':'○ OFFLINE - Waiting for admin feed'}</div></div>`;
+ });
+ document.getElementById('grid').innerHTML=h || `<div style="color:#6b7fa3;padding:20px;">No locations found for "${search}"</div>`;
+ document.getElementById('last').textContent=new Date().toLocaleTimeString();
+ let latest=Object.values(liveData).sort((a,b)=>(b.updated||0)-(a.updated||0))[0];
+ document.getElementById('status').textContent= latest && Date.now()-latest.updated<6000? `Live - Broadcasting from ${latest.placeName}` : 'Offline - Admin camera not active';
+}
+render();
+</script></body></html>

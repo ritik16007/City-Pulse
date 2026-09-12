@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Phone CAM-02</title>
+<script src="https://unpkg.com/peerjs@1.5.3/dist/peerjs.min.js"></script>
+<style>body{background:#000;color:#fff;font-family:Inter;text-align:center;margin:0;padding:12px}video{width:100%;height:55vh;object-fit:cover;background:#111;border-radius:12px;margin-top:10px}.btn{padding:14px 20px;background:#2ee66c;color:#000;border:0;border-radius:10px;font-weight:800;margin-top:12px;width:100%}.log{background:#111625;border:1px solid #1e2a44;padding:10px;border-radius:8px;font-size:11px;color:#8aa0c8;text-align:left;margin-top:10px;word-break:break-all;max-height:120px;overflow:auto}</style>
+</head><body>
+<h3>📱 Phone as CAM-02</h3>
+<div id="status" style="padding:8px;color:#ffaa00;">Initializing...</div>
+<video id="v" autoplay muted playsinline></video>
+<button class="btn" id="startBtn">📷 Start Camera & Connect</button>
+<button class="btn" style="background:#5a86ff;color:#fff;" onclick="location.reload()">🔄 Retry</button>
+<div class="log" id="log">Logs:<br></div>
+
+<script>
+function log(m){ document.getElementById('log').innerHTML+=`<div>${new Date().toLocaleTimeString()}: ${m}</div>`; console.log(m); }
+
+let stream, peer;
+let params = new URLSearchParams(location.search);
+let adminId = params.get('id');
+const v=document.getElementById('v'), st=document.getElementById('status');
+
+if(!adminId){
+  st.textContent="❌ No Admin ID in URL - QR dobara scan karo";
+  log("No admin ID found");
+}else{
+  st.textContent=`Admin ID: ${adminId}`;
+  log(`Admin ID: ${adminId}`);
+}
+
+// HTTPS check
+if(location.protocol!=='https:' && location.hostname!=='localhost' && location.hostname!=='127.0.0.1'){
+  log("⚠️ HTTPS nahi hai - Camera block ho sakta hai. Vercel/Netlify pe deploy karo");
+}
+
+async function start(){
+  try{
+    log("Requesting camera...");
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}}, audio:false});
+    v.srcObject=stream;
+    st.textContent="✅ Camera ON - Connecting to Admin...";
+    log("Camera OK, creating peer...");
+
+    peer = new Peer('phone-'+Math.floor(Math.random()*10000), {
+      config:{ iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}] },
+      debug:2
+    });
+
+    peer.on('open', id=>{
+      log(`Phone Peer ID: ${id}`);
+      if(adminId){
+        log(`Calling Admin ${adminId}...`);
+        let call = peer.call(adminId, stream);
+        call.on('close', ()=>{ log("Call closed"); st.textContent="Call closed - Retry"; });
+        call.on('error', e=>{ log("Call error: "+e); });
+        st.textContent="📞 Calling Admin... Check Admin screen";
+      }
+    });
+
+    peer.on('error', err=>{ log("Peer Error: "+err.type+" - "+err.message); st.textContent="Error: "+err.type; });
+
+    peer.on('disconnected', ()=>{ log("Peer disconnected - reconnecting"); peer.reconnect(); });
+
+  }catch(e){
+    log("Camera Error: "+e.message);
+    st.textContent="Camera Error: "+e.message+" - Permission do";
+    alert("Give camera permission and open https: "+e.message);
+  }
+}
+
+document.getElementById('startBtn').onclick=start;
+// Auto start if ID present
+if(adminId) setTimeout(start, 800);
+</script></body></html>

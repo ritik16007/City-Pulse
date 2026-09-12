@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif;}
+body{background:#0a0e1a;color:#e6e8ec;min-height:100vh;}
+.navbar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:#111625;border-bottom:1px solid #1e2a44;position:sticky;top:0;z-index:100;}
+.logo{display:flex;gap:10px;align-items:center;font-weight:800;color:#fff;}
+.logo-icon{width:32px;height:32px;background:#2ee66c;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;}
+.admin-btn{padding:8px 14px;border-radius:8px;background:#1a2132;border:1px solid #2a3246;color:#8aa0c8;cursor:pointer;font-size:12px;font-weight:600;}
+.live-dot{width:8px;height:8px;background:#2ee66c;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;margin-right:6px;}
+@keyframes pulse{0%{opacity:1}50%{opacity:0.4}100%{opacity:1}}
+.crowd-page{padding:20px;max-width:1400px;margin:0 auto;}

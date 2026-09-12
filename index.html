@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta http-equiv="refresh" content="0; url=login.html"><title>City Pulse</title></head>
+<body style="background:#070a12;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">Loading City Pulse... Redirecting to Login
+    <!-- REVIEWS SECTION -->
+<section id="reviews" style="padding:50px 20px; background:#0f172a; color:white; font-family:sans-serif;">
+  <h2 style="text-align:center; font-size:28px; margin-bottom:30px;">⭐ User Reviews</h2>
+  
+  <div id="review-list" style="max-width:700px; margin:0 auto 30px;"></div>
+
+  <form id="reviewForm" style="max-width:500px; margin:0 auto; background:#1e293b; padding:20px; border-radius:12px;">
+    <h3>Leave a Review</h3>
+    <input type="text" id="reviewName" placeholder="Your Name" required style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:none;">
+    <select id="reviewStars" style="width:100%; padding:10px; margin:8px 0; border-radius:6px;">
+      <option value="5">★★★★★ - Excellent</option>
+      <option value="4">★★★★ - Good</option>
+      <option value="3">★★★ - Average</option>
+      <option value="2">★★ - Poor</option>
+      <option value="1">★ - Bad</option>
+    </select>
+    <textarea id="reviewText" placeholder="Your feedback..." required style="width:100%; padding:10px; margin:8px 0; border-radius:6px; border:none; height:80px;"></textarea>
+    <button type="submit" style="width:100%; padding:12px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Submit Review</button>
+  </form>
+</section>
+
+<script>
+const reviewList = document.getElementById('review-list');
+const form = document.getElementById('reviewForm');
+let reviews = JSON.parse(localStorage.getItem('citypulse_reviews') || '[]');
+
+function showReviews(){
+  reviewList.innerHTML = reviews.length ? reviews.map(r=>`
+    <div style="background:#1e293b; padding:15px; border-radius:10px; margin-bottom:12px; border-left:4px solid #3b82f6;">
+      <strong>${r.name}</strong> - ${'★'.repeat(r.stars)}<br>
+      <p style="margin:5px 0; color:#cbd5e1;">${r.text}</p>
+      <small style="color:#94a3b8;">${r.date}</small>
+    </div>`).join('') : '<p style="text-align:center; color:#94a3b8;">No reviews yet. Be first!</p>';
+}
+
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  reviews.unshift({
+    name: document.getElementById('reviewName').value,
+    stars: parseInt(document.getElementById('reviewStars').value),
+    text: document.getElementById('reviewText').value,
+    date: new Date().toLocaleDateString()
+  });
+  localStorage.setItem('citypulse_reviews', JSON.stringify(reviews));
+  form.reset();
+  showReviews();
+});
+showReviews();
+</script>
+<!-- END REVIEWS -->
+</body>
+</html>
