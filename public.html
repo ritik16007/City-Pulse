@@ -61,4 +61,34 @@ function render(){
  document.getElementById('status').textContent= latest && Date.now()-latest.updated<6000? `Live - Broadcasting from ${latest.placeName}` : 'Offline - Admin camera not active';
 }
 render();
-</script></body></html>
+</script>
+<script>
+const reviewList = document.getElementById('review-list');
+const form = document.getElementById('reviewForm');
+let reviews = JSON.parse(localStorage.getItem('citypulse_reviews') || '[]');
+
+function showReviews(){
+  reviewList.innerHTML = reviews.length ? reviews.map(r=>`
+    <div style="background:#1e293b; padding:15px; border-radius:10px; margin-bottom:12px; border-left:4px solid #3b82f6;">
+      <strong>${r.name}</strong> - ${'★'.repeat(r.stars)}<br>
+      <p style="margin:5px 0; color:#cbd5e1;">${r.text}</p>
+      <small style="color:#94a3b8;">${r.date}</small>
+    </div>`).join('') : '<p style="text-align:center; color:#94a3b8;">No reviews yet. Be first!</p>';
+}
+
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  reviews.unshift({
+    name: document.getElementById('reviewName').value,
+    stars: parseInt(document.getElementById('reviewStars').value),
+    text: document.getElementById('reviewText').value,
+    date: new Date().toLocaleDateString()
+  });
+  localStorage.setItem('citypulse_reviews', JSON.stringify(reviews));
+  form.reset();
+  showReviews();
+});
+showReviews();
+</script>
+<!-- END REVIEWS -->
+</body></html>
