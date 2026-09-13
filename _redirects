@@ -1,0 +1,9 @@
+/login.html     /login.html     200
+/admin.html     /admin.html     200
+/public.html    /public.html    200
+/phone-cam.html /phone-cam.html 200
+/manifest.json  /manifest.json  200
+/*.js           /:splat         200
+/*.css          /:splat         200
+/*.json         /:splat         200
+/*              /index.html     200
