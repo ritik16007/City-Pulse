@@ -8,6 +8,7 @@ Live: https://city-pulse12.netlify.app
 - Arshdeep Singh - 
 - Bhagyanath CB
 - Samleen Kaur
+- Aman Jasil P - Aman-Jasil
 
 ## Tech Stack
 TensorFlow.js, JS, Smart Cities, Zero-Backend
